@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GRAND LEAKAGE // Dossier Terminal</title>
+  <title> GRAND LEAKAGE </title>
   <style>
     :root {
-      --bg: #050806;
-      --panel: #0a110d;
-      --panel-2: #0f1913;
-      --border: #173322;
-      --green: #00ff66;
-      --green-dim: #00b84a;
-      --green-muted: #5f8f70;
-      --amber: #ffb000;
-      --red: #ff3b5c;
+      --bg: #050908;
+      --panel: rgba(10, 18, 15, 0.88);
+      --panel-2: rgba(16, 28, 23, 0.92);
+      --border: #1d3b2f;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.14);
+      --warn: #ffb703;
+      --warn-dim: rgba(255, 183, 3, 0.16);
+      --danger: #ff4d6d;
+      --danger-dim: rgba(255, 77, 109, 0.16);
+      --text: #e6f7ef;
+      --muted: #86ad9c;
       --font-mono: "Courier New", Courier, monospace;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     * {
@@ -26,243 +30,210 @@
 
     body {
       background-color: var(--bg);
-      color: var(--green);
-      font-family: var(--font-mono);
+      color: var(--text);
+      font-family: var(--font-sans);
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 20px 14px 48px;
       position: relative;
+      overflow-x: hidden;
     }
 
-    /* Matrix rain canvas behind content */
-    #matrix-bg {
+    /* Animated Matrix Code Rain Canvas */
+    #matrixCanvas {
       position: fixed;
       inset: 0;
       width: 100%;
       height: 100%;
       z-index: 0;
-      opacity: 0.16;
       pointer-events: none;
+      opacity: 0.28;
     }
 
-    /* Subtle CRT scanline overlay */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0) 0px,
-        rgba(0, 0, 0, 0) 2px,
-        rgba(0, 255, 102, 0.03) 3px,
-        rgba(0, 0, 0, 0.25) 4px
-      );
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .app {
+    .container {
       position: relative;
-      z-index: 2;
-      max-width: 1200px;
+      z-index: 1;
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 24px 18px 60px;
     }
 
     header {
       border: 1px solid var(--border);
-      background: rgba(10, 17, 13, 0.9);
-      padding: 20px;
-      border-radius: 6px;
-      box-shadow: 0 0 25px rgba(0, 255, 102, 0.08);
-      margin-bottom: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
       align-items: center;
-      gap: 14px;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .brand-tag {
-      font-size: 0.75rem;
-      color: var(--amber);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 6px;
+    .brand {
+      font-family: var(--font-mono);
     }
 
-    h1 {
-      font-size: clamp(1.6rem, 4vw, 2.5rem);
-      letter-spacing: 3px;
-      text-shadow: 0 0 12px rgba(0, 255, 102, 0.45);
+    .brand h1 {
+      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+      color: var(--accent);
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 12px rgba(0, 255, 136, 0.25);
     }
 
-    .subtitle {
-      color: var(--green-muted);
+    .brand p {
       font-size: 0.85rem;
+      color: var(--muted);
       margin-top: 4px;
     }
 
-    .status-box {
-      text-align: right;
-      font-size: 0.8rem;
-      line-height: 1.6;
-      color: var(--green-dim);
+    .header-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
     }
 
-    .dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 8px var(--green);
-      margin-right: 6px;
+    .stats {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      color: var(--accent);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 22px;
+      grid-template-columns: 1fr 1.7fr;
+      gap: 20px;
       align-items: start;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 880px) {
       .grid {
         grid-template-columns: 1fr;
       }
-      .status-box {
-        text-align: left;
-      }
     }
 
-    .panel {
-      background: rgba(10, 17, 13, 0.92);
+    .card {
+      background: var(--panel);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 10px;
       padding: 18px;
-      box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
     }
 
-    .panel-title {
+    .card-title {
+      font-family: var(--font-mono);
       font-size: 0.95rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      padding-bottom: 10px;
-      margin-bottom: 16px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
-    .field {
-      margin-bottom: 14px;
+    .form-group {
+      margin-bottom: 13px;
     }
 
     label {
       display: block;
-      font-size: 0.78rem;
-      color: var(--green-dim);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-family: var(--font-mono);
     }
 
     input[type="text"],
     input[type="file"],
-    textarea,
-    select {
+    select,
+    textarea {
       width: 100%;
       background: var(--panel-2);
-      color: var(--green);
       border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 9px 11px;
-      font-family: var(--font-mono);
-      font-size: 0.88rem;
+      color: var(--text);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
     textarea {
-      min-height: 76px;
       resize: vertical;
+      min-height: 68px;
     }
 
-    .pic-preview-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .photo-preview {
       margin-top: 8px;
+      width: 84px;
+      height: 84px;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      object-fit: cover;
+      display: none;
+      background: var(--panel-2);
     }
 
-    .pic-preview {
-      width: 58px;
-      height: 58px;
-      border-radius: 4px;
-      border: 1px solid var(--green-dim);
-      object-fit: cover;
-      background: var(--panel-2);
+    .photo-preview.active {
+      display: block;
     }
 
     .btn-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
-      margin-top: 8px;
+      margin-top: 14px;
     }
 
     button {
-      font-family: var(--font-mono);
       cursor: pointer;
-      border-radius: 4px;
+      border: none;
+      border-radius: 6px;
       padding: 10px 14px;
+      font-family: var(--font-mono);
       font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: all 0.18s ease;
-      border: 1px solid var(--green);
-      background: rgba(0, 255, 102, 0.12);
-      color: var(--green);
+      font-weight: 700;
+      transition: transform 0.1s, opacity 0.2s, border-color 0.2s;
     }
 
-    button:hover {
-      background: var(--green);
-      color: var(--bg);
-      box-shadow: 0 0 12px rgba(0, 255, 102, 0.45);
+    button:active {
+      transform: scale(0.98);
     }
 
-    button.secondary {
-      border-color: var(--green-muted);
-      color: var(--green-muted);
-      background: transparent;
+    .btn-primary {
+      background: var(--accent);
+      color: #05110b;
+      flex: 1;
     }
 
-    button.secondary:hover {
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(0, 255, 102, 0.08);
-      box-shadow: none;
+    .btn-secondary {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
     }
 
-    button.danger {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(255, 59, 92, 0.08);
+    .btn-secondary:hover {
+      border-color: var(--accent);
+    }
+
+    .btn-danger {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid rgba(255, 77, 109, 0.35);
       padding: 6px 10px;
-      font-size: 0.72rem;
-    }
-
-    button.danger:hover {
-      background: var(--red);
-      color: #fff;
-      box-shadow: 0 0 10px rgba(255, 59, 92, 0.4);
+      font-size: 0.78rem;
     }
 
     .toolbar {
@@ -271,447 +242,520 @@
       gap: 10px;
       margin-bottom: 16px;
       align-items: center;
-      justify-content: space-between;
     }
 
-    .search-input {
-      flex: 1;
-      min-width: 200px;
+    .search-box {
+      flex: 1 1 200px;
     }
 
-    .records-list {
+    .filter-select {
+      width: auto;
+      min-width: 165px;
+    }
+
+    .records-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 14px;
     }
 
-    .card {
+    .profile-card {
       background: var(--panel-2);
       border: 1px solid var(--border);
-      border-radius: 5px;
+      border-radius: 8px;
       padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      transition: transform 0.15s, border-color 0.2s;
+      gap: 9px;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      border-color: var(--green-dim);
-    }
-
-    .card-top {
+    .profile-top {
       display: flex;
       gap: 12px;
       align-items: center;
     }
 
     .avatar {
-      width: 64px;
-      height: 64px;
-      border-radius: 4px;
-      border: 1px solid var(--green-dim);
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
       object-fit: cover;
+      border: 1px solid var(--accent);
+      background: var(--bg);
       flex-shrink: 0;
-      background: #060b08;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      font-size: 1.1rem;
     }
 
-    .record-id {
-      font-size: 0.75rem;
-      color: var(--amber);
-      letter-spacing: 1px;
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 7px;
     }
 
-    .record-name {
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: var(--green);
+    .profile-name {
+      font-weight: 700;
+      font-size: 1rem;
       word-break: break-word;
+    }
+
+    .profile-id {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      margin-top: 2px;
     }
 
     .badge {
       display: inline-block;
-      font-size: 0.68rem;
-      padding: 2px 7px;
-      border-radius: 3px;
-      border: 1px solid var(--green-dim);
-      color: var(--green-dim);
-      margin-top: 4px;
-      text-transform: uppercase;
+      width: fit-content;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(0, 255, 136, 0.3);
     }
 
-    .record-notes {
-      font-size: 0.8rem;
-      color: var(--green-muted);
-      line-height: 1.45;
-      white-space: pre-wrap;
+    .badge-danger {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border-color: rgba(255, 77, 109, 0.4);
+    }
+
+    .badge-warn {
+      background: var(--warn-dim);
+      color: var(--warn);
+      border-color: rgba(255, 183, 3, 0.4);
+    }
+
+    .meta {
+      font-size: 0.85rem;
+      color: var(--muted);
       word-break: break-word;
-      border-top: 1px dashed rgba(0, 255, 102, 0.18);
-      padding-top: 8px;
     }
 
-    .card-footer {
+    .meta strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .card-actions {
       margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.7rem;
-      color: var(--green-muted);
+      justify-content: flex-end;
     }
 
     .empty-state {
       text-align: center;
       padding: 36px 16px;
-      color: var(--green-muted);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
       border: 1px dashed var(--border);
-      border-radius: 5px;
+      border-radius: 8px;
+    }
+
+    .note {
+      margin-top: 18px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <canvas id="matrix-bg"></canvas>
+  <canvas id="matrixCanvas" aria-hidden="true"></canvas>
 
-  <div class="app">
+  <div class="container">
     <header>
-      <div>
-        <div class="brand-tag">// FICTIONAL ARCHIVE &amp; SANDBOX UI</div>
-        <h1>GRAND LEAKAGE</h1>
-        <p class="subtitle">Local dossier reader &amp; entry console — add fake identities, IDs &amp; pictures to inspect anytime.</p>
+      <div class="brand">
+        <h1> GRAND LEAKAGE </h1>
+        <p> CRIMES AND SCAMS IN THE SOCIETY </p>
       </div>
-      <div class="status-box">
-        <div><span class="dot"></span>SYSTEM ONLINE</div>
-        <div>RECORDS STORED: <strong id="record-count">0</strong></div>
-        <div id="clock">--:--:--</div>
+      <div class="header-controls">
+        <button type="button" class="btn-secondary" id="toggleMatrixBtn">MATRIX: ON</button>
+        <div class="stats" id="recordCount">RECORDS: 0</div>
       </div>
     </header>
 
     <div class="grid">
-      <!-- Add Record Form -->
-      <section class="panel" aria-label="Add new dossier entry">
-        <div class="panel-title">
-          <span>[+] Inject Fake Person</span>
-          <span style="font-size:0.72rem; color:var(--amber);">LOCAL STORAGE</span>
-        </div>
-
-        <form id="dossier-form">
-          <div class="field">
-            <label for="person-id">Person ID</label>
-            <input type="text" id="person-id" placeholder="e.g. GL-0042" required />
+      <!-- Left Column: Add Entry Form -->
+      <section class="card">
+        <h2 class="card-title">+ Add Profile</h2>
+        <form id="dossierForm">
+          <div class="form-group">
+            <label for="fullName">NAME *</label>
+            <input type="text" id="fullName" placeholder="e.g., Jordan Vance" required />
           </div>
 
-          <div class="field">
-            <label for="person-name">Full Name / Alias</label>
-            <input type="text" id="person-name" placeholder="e.g. Zero Cool / Alex Vance" required />
+          <div class="form-group">
+            <label for="userId">ID / REFERENCE CODE *</label>
+            <input type="text" id="userId" placeholder="e.g., REF-1042 or @handle" required />
           </div>
 
-          <div class="field">
-            <label for="person-tag">Category / Persona Type</label>
-            <select id="person-tag">
-              <option value="Fake Persona">Fake Persona</option>
-              <option value="Test Subject">Test Subject</option>
-              <option value="Alias / Handle">Alias / Handle</option>
-              <option value="NPC / Character">NPC / Character</option>
+          <div class="form-group">
+            <label for="personType">TYPE OF PERSON *</label>
+            <select id="personType">
+              <option value="Crime">Crime</option>
+              <option value="Scams">Scams</option>
+              <option value="Fake Person">Fake Person</option>
+              <option value="Contact">Contact</option>
+              <option value="Researcher">Researcher</option>
+              <option value="Custom">Custom...</option>
             </select>
           </div>
 
-          <div class="field">
-            <label for="pic-url">Picture URL (Optional)</label>
-            <input type="text" id="pic-url" placeholder="https://... or upload file below" />
+          <div class="form-group" id="customTypeGroup" style="display: none;">
+            <label for="customTypeInput">CUSTOM TYPE *</label>
+            <input type="text" id="customTypeInput" placeholder="Enter custom person type" />
           </div>
 
-          <div class="field">
-            <label for="pic-file">Or Upload Picture File</label>
-            <input type="file" id="pic-file" accept="image/*" />
-            <div class="pic-preview-wrap">
-              <img id="pic-preview" class="pic-preview" alt="Preview" />
-              <span style="font-size:0.74rem; color:var(--green-muted);">Auto-generates a fallback avatar if left blank.</span>
-            </div>
+          <div class="form-group">
+            <label for="socialAccount">SOCIAL MEDIA ACCOUNTS</label>
+            <input type="text" id="socialAccount" placeholder="e.g., X: @user, TG: @user, IG: @user" />
           </div>
 
-          <div class="field">
-            <label for="person-notes">Dossier Notes / Bio</label>
-            <textarea id="person-notes" placeholder="Add fictional background notes, traits, or timestamps..."></textarea>
+          <div class="form-group">
+            <label for="photoInput">PHOTO (JPG / PNG)</label>
+            <input type="file" id="photoInput" accept="image/*" />
+            <img id="photoPreview" class="photo-preview" alt="Preview" />
+          </div>
+
+          <div class="form-group">
+            <label for="notes">DETAILS / NOTES (OPTIONAL)</label>
+            <textarea id="notes" placeholder="Context, links, or observations..."></textarea>
           </div>
 
           <div class="btn-row">
-            <button type="submit">Save Entry</button>
-            <button type="button" class="secondary" id="clear-form">Reset</button>
+            <button type="submit" class="btn-primary">SAVE ENTRY</button>
+            <button type="reset" class="btn-secondary" id="clearBtn">CLEAR</button>
           </div>
         </form>
       </section>
 
-      <!-- Reader / Archive View -->
-      <section class="panel" aria-label="Stored dossiers">
-        <div class="panel-title">
-          <span>[=] Dossier Reader</span>
-          <button type="button" class="danger" id="wipe-all">Wipe All</button>
-        </div>
+      <!-- Right Column: Stored Records -->
+      <section class="card">
+        <h2 class="card-title">Saved Records</h2>
 
         <div class="toolbar">
-          <input type="text" id="search-input" class="search-input" placeholder="Search by ID, name, tag, or notes..." />
-          <button type="button" class="secondary" id="load-samples"></button>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-box"
+            placeholder="Search name, ID, social, type, or notes..."
+          />
+          <select id="typeFilter" class="filter-select" aria-label="Filter by person type">
+            <option value="ALL">All Types</option>
+          </select>
+          <input type="file" id="importFile" accept="application/json" style="display:none" />
         </div>
 
-        <div id="records-container" class="records-list"></div>
+        <div id="recordsContainer" class="records-grid"></div>
+        
       </section>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = "grand_leakage_dossiers_v1";
+    // --- Matrix Rain Background ---
+    const canvas = document.getElementById("matrixCanvas");
+    const ctx = canvas.getContext("2d");
+    const toggleMatrixBtn = document.getElementById("toggleMatrixBtn");
+    const glyphChars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノ<>/\\*#+-=";
+    const fontSize = 15;
+    let columns = 0;
+    let drops = [];
+    let matrixEnabled = true;
+    let animationId = null;
 
-    const form = document.getElementById("dossier-form");
-    const idInput = document.getElementById("person-id");
-    const nameInput = document.getElementById("person-name");
-    const tagInput = document.getElementById("person-tag");
-    const picUrlInput = document.getElementById("pic-url");
-    const picFileInput = document.getElementById("pic-file");
-    const picPreview = document.getElementById("pic-preview");
-    const notesInput = document.getElementById("person-notes");
-    const clearFormBtn = document.getElementById("clear-form");
-    const wipeAllBtn = document.getElementById("wipe-all");
-    const loadSamplesBtn = document.getElementById("load-samples");
-    const searchInput = document.getElementById("search-input");
-    const recordsContainer = document.getElementById("records-container");
-    const recordCountEl = document.getElementById("record-count");
-    const clockEl = document.getElementById("clock");
-
-    let uploadedImageData = "";
-
-    // Generate a clean SVG placeholder avatar if no photo is supplied
-    function makePlaceholderAvatar(label = "GL") {
-      const clean = (label || "GL").slice(0, 2).toUpperCase().replace(/[^A-Z0-9]/g, "X");
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
-          <rect width="120" height="120" fill="#07120c"/>
-          <rect x="4" y="4" width="112" height="112" rx="6" fill="none" stroke="#00ff66" stroke-opacity="0.45" stroke-width="2"/>
-          <circle cx="60" cy="44" r="18" fill="none" stroke="#00ff66" stroke-width="2.5"/>
-          <path d="M26 96 C28 74, 92 74, 94 96" fill="none" stroke="#00ff66" stroke-width="2.5"/>
-          <text x="60" y="112" text-anchor="middle" fill="#ffb000" font-family="monospace" font-size="12">${clean}</text>
-        </svg>`;
-      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim());
+    function resizeMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.random() * -40);
     }
 
-    function updatePreview() {
-      const url = picUrlInput.value.trim();
-      if (uploadedImageData) {
-        picPreview.src = uploadedImageData;
-      } else if (url) {
-        picPreview.src = url;
+    function drawMatrix() {
+      if (!matrixEnabled) return;
+      ctx.fillStyle = "rgba(5, 9, 8, 0.08)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#00ff88";
+      ctx.font = `${fontSize}px "Courier New", monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = glyphChars[Math.floor(Math.random() * glyphChars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+        ctx.fillText(char, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i] += 0.9;
+      }
+
+      animationId = requestAnimationFrame(drawMatrix);
+    }
+
+    toggleMatrixBtn.addEventListener("click", () => {
+      matrixEnabled = !matrixEnabled;
+      toggleMatrixBtn.textContent = matrixEnabled ? "MATRIX: ON" : "MATRIX: OFF";
+      if (matrixEnabled) {
+        drawMatrix();
       } else {
-        picPreview.src = makePlaceholderAvatar(nameInput.value || idInput.value || "GL");
+        cancelAnimationFrame(animationId);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
-    }
-
-    picPreview.onerror = () => {
-      picPreview.src = makePlaceholderAvatar(nameInput.value || "ERR");
-    };
-
-    picFileInput.addEventListener("change", (e) => {
-      const file = e.target.files?.[0];
-      if (!file) {
-        uploadedImageData = "";
-        updatePreview();
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        uploadedImageData = String(reader.result || "");
-        updatePreview();
-      };
-      reader.readAsDataURL(file);
     });
 
-    picUrlInput.addEventListener("input", () => {
-      if (picUrlInput.value.trim()) uploadedImageData = "";
-      updatePreview();
-    });
+    window.addEventListener("resize", resizeMatrix);
+    resizeMatrix();
+    drawMatrix();
 
-    nameInput.addEventListener("input", updatePreview);
-    idInput.addEventListener("input", updatePreview);
+    // --- Profile Archive Logic ---
+    const STORAGE_KEY = "cyber_matrix_archive_v4";
+
+    const form = document.getElementById("dossierForm");
+    const fullNameEl = document.getElementById("fullName");
+    const userIdEl = document.getElementById("userId");
+    const personTypeEl = document.getElementById("personType");
+    const customTypeGroupEl = document.getElementById("customTypeGroup");
+    const customTypeInputEl = document.getElementById("customTypeInput");
+    const socialEl = document.getElementById("socialAccount");
+    const photoInputEl = document.getElementById("photoInput");
+    const photoPreviewEl = document.getElementById("photoPreview");
+    const notesEl = document.getElementById("notes");
+    const recordsContainer = document.getElementById("recordsContainer");
+    const recordCountEl = document.getElementById("recordCount");
+    const searchInputEl = document.getElementById("searchInput");
+    const typeFilterEl = document.getElementById("typeFilter");
+    const exportBtn = document.getElementById("exportBtn");
+    const importTrigger = document.getElementById("importTrigger");
+    const importFile = document.getElementById("importFile");
+
+    let currentPhotoData = "";
+
+    personTypeEl.addEventListener("change", () => {
+      const isCustom = personTypeEl.value === "Custom";
+      customTypeGroupEl.style.display = isCustom ? "block" : "none";
+      customTypeInputEl.required = isCustom;
+    });
 
     function loadRecords() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      } catch {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (err) {
+        console.error("Failed to read storage:", err);
         return [];
       }
     }
 
     function saveRecords(records) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-      renderRecords();
     }
 
     function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      const div = document.createElement("div");
+      div.textContent = str || "";
+      return div.innerHTML;
+    }
+
+    function getBadgeClass(type) {
+      const normalized = (type || "").toLowerCase();
+      if (normalized === "crime" || normalized === "scams") return "badge badge-danger";
+      if (normalized === "fake person") return "badge badge-warn";
+      return "badge";
+    }
+
+    function syncTypeFilterOptions(records) {
+      const previousSelection = typeFilterEl.value;
+      const defaultTypes = ["Crime", "Scams", "Fake Person", "Contact", "Researcher"];
+      const recordTypes = records.map((r) => r.personType).filter(Boolean);
+      const uniqueTypes = [...new Set([...defaultTypes, ...recordTypes])];
+
+      typeFilterEl.innerHTML =
+        `<option value="ALL">All Types</option>` +
+        uniqueTypes.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+
+      if ([...typeFilterEl.options].some((opt) => opt.value === previousSelection)) {
+        typeFilterEl.value = previousSelection;
+      }
+    }
+
+    photoInputEl.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        currentPhotoData = "";
+        photoPreviewEl.classList.remove("active");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        currentPhotoData = reader.result;
+        photoPreviewEl.src = currentPhotoData;
+        photoPreviewEl.classList.add("active");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      currentPhotoData = "";
+      photoPreviewEl.src = "";
+      photoPreviewEl.classList.remove("active");
+      customTypeGroupEl.style.display = "none";
+      customTypeInputEl.required = false;
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const chosenType =
+        personTypeEl.value === "Custom"
+          ? customTypeInputEl.value.trim() || "Custom"
+          : personTypeEl.value;
+
+      const newRecord = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        name: fullNameEl.value.trim(),
+        userId: userIdEl.value.trim(),
+        personType: chosenType,
+        social: socialEl.value.trim(),
+        notes: notesEl.value.trim(),
+        photo: currentPhotoData,
+        createdAt: new Date().toLocaleString()
+      };
+
+      const records = loadRecords();
+      records.unshift(newRecord);
+      saveRecords(records);
+
+      form.reset();
+      currentPhotoData = "";
+      photoPreviewEl.src = "";
+      photoPreviewEl.classList.remove("active");
+      customTypeGroupEl.style.display = "none";
+      customTypeInputEl.required = false;
+
+      renderRecords();
+    });
+
+    function deleteRecord(id) {
+      const updated = loadRecords().filter((item) => item.id !== id);
+      saveRecords(updated);
+      renderRecords();
     }
 
     function renderRecords() {
-      const all = loadRecords();
-      recordCountEl.textContent = String(all.length);
+      const query = searchInputEl.value.trim().toLowerCase();
+      const selectedType = typeFilterEl.value;
+      const allRecords = loadRecords();
 
-      const q = searchInput.value.trim().toLowerCase();
-      const filtered = q
-        ? all.filter((item) =>
-            [item.id, item.name, item.tag, item.notes].some((field) =>
-              String(field || "").toLowerCase().includes(q)
-            )
-          )
-        : all;
+      syncTypeFilterOptions(allRecords);
+      recordCountEl.textContent = `RECORDS: ${allRecords.length}`;
+
+      const filtered = allRecords.filter((rec) => {
+        const matchesType = selectedType === "ALL" || rec.personType === selectedType;
+        const matchesQuery =
+          !query ||
+          rec.name.toLowerCase().includes(query) ||
+          rec.userId.toLowerCase().includes(query) ||
+          (rec.personType && rec.personType.toLowerCase().includes(query)) ||
+          (rec.social && rec.social.toLowerCase().includes(query)) ||
+          (rec.notes && rec.notes.toLowerCase().includes(query));
+        return matchesType && matchesQuery;
+      });
 
       if (filtered.length === 0) {
         recordsContainer.innerHTML = `
           <div class="empty-state" style="grid-column: 1 / -1;">
-            No matching dossiers found. Add a fake person on the left or click <strong>Load Samples</strong>.
-          </div>`;
+            No matching profiles found. Add an entry using the form to get started.
+          </div>
+        `;
         return;
       }
 
       recordsContainer.innerHTML = filtered
-        .map((item) => {
-          const imgSrc = item.pic || makePlaceholderAvatar(item.name || item.id);
+        .map((rec) => {
+          const initials =
+            rec.name
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((part) => part[0].toUpperCase())
+              .join("") || "?";
+
+          const avatarHtml = rec.photo
+            ? `<div class="avatar"><img src="${rec.photo}" alt="${escapeHtml(rec.name)}" /></div>`
+            : `<div class="avatar">${escapeHtml(initials)}</div>`;
+
           return `
-            <article class="card">
-              <div class="card-top">
-                <img class="avatar" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.name)}" onerror="this.src='${makePlaceholderAvatar("GL")}'" />
+            <article class="profile-card">
+              <div class="profile-top">
+                ${avatarHtml}
                 <div>
-                  <div class="record-id">ID: ${escapeHtml(item.id)}</div>
-                  <div class="record-name">${escapeHtml(item.name)}</div>
-                  <span class="badge">${escapeHtml(item.tag || "Fake Persona")}</span>
+                  <div class="profile-name">${escapeHtml(rec.name)}</div>
+                  <div class="profile-id">${escapeHtml(rec.userId)}</div>
                 </div>
               </div>
-              <div class="record-notes">${escapeHtml(item.notes || "No additional notes recorded.")}</div>
-              <div class="card-footer">
-                <span>${escapeHtml(item.createdAt || "")}</span>
-                <button type="button" class="danger" onclick="deleteRecord('${escapeHtml(item.uid)}')">Delete</button>
+              ${rec.personType ? `<span class="${getBadgeClass(rec.personType)}">${escapeHtml(rec.personType)}</span>` : ""}
+              ${rec.social ? `<div class="meta"><strong>Social:</strong> ${escapeHtml(rec.social)}</div>` : ""}
+              ${rec.notes ? `<div class="meta"><strong>Notes:</strong> ${escapeHtml(rec.notes)}</div>` : ""}
+              <div class="meta" style="font-size:0.75rem;">Added: ${escapeHtml(rec.createdAt)}</div>
+              <div class="card-actions">
+                <button type="button" class="btn-danger" onclick="deleteRecord('${rec.id}')">DELETE</button>
               </div>
-            </article>`;
+            </article>
+          `;
         })
         .join("");
     }
 
-    window.deleteRecord = function (uid) {
-      const updated = loadRecords().filter((r) => r.uid !== uid);
-      saveRecords(updated);
-    };
+    searchInputEl.addEventListener("input", renderRecords);
+    typeFilterEl.addEventListener("change", renderRecords);
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const id = idInput.value.trim();
-      const name = nameInput.value.trim();
-      if (!id || !name) return;
+    exportBtn.addEventListener("click", () => {
+      const data = localStorage.getItem(STORAGE_KEY) || "[]";
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "matrix-archive-backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
 
-      const pic = uploadedImageData || picUrlInput.value.trim() || makePlaceholderAvatar(name);
-      const newRecord = {
-        uid: "uid_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-        id,
-        name,
-        tag: tagInput.value,
-        pic,
-        notes: notesInput.value.trim(),
-        createdAt: new Date().toLocaleString()
+    importTrigger.addEventListener("click", () => importFile.click());
+
+    importFile.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (!Array.isArray(parsed)) throw new Error("Invalid format");
+          saveRecords(parsed);
+          renderRecords();
+        } catch {
+          alert("Invalid JSON backup file.");
+        }
       };
-
-      const current = loadRecords();
-      current.unshift(newRecord);
-      saveRecords(current);
-
-      form.reset();
-      uploadedImageData = "";
-      updatePreview();
+      reader.readAsText(file);
+      importFile.value = "";
     });
 
-    clearFormBtn.addEventListener("click", () => {
-      form.reset();
-      uploadedImageData = "";
-      updatePreview();
-    });
-
-    wipeAllBtn.addEventListener("click", () => {
-      if (confirm("Delete all stored GRAND LEAKAGE entries from this browser?")) {
-        saveRecords([]);
-      }
-    });
-
-    loadSamplesBtn.addEventListener("click", () => {
-      const samples = [
-        {
-          uid: "sample_1",
-          id: "GL-101",
-          name: "Cipher Vance",
-          tag: "Fake Persona",
-          pic: makePlaceholderAvatar("CV"),
-          notes: "Fictional persona created for UI testing. Operates out of Sector 7G (imaginary).",
-          createdAt: "Sample Entry"
-        },
-        {
-          uid: "sample_2",
-          id: "GL-204",
-          name: "Nyx Sterling",
-          tag: "NPC / Character",
-          pic: makePlaceholderAvatar("NS"),
-          notes: "Placeholder character profile for testing search, image rendering, and persistence.",
-          createdAt: "Sample Entry"
-        }
-      ];
-      const existing = loadRecords();
-      const existingIds = new Set(existing.map((x) => x.uid));
-      const merged = [...samples.filter((s) => !existingIds.has(s.uid)), ...existing];
-      saveRecords(merged);
-    });
-
-    searchInput.addEventListener("input", renderRecords);
-
-    // Live terminal clock
-    function tickClock() {
-      clockEl.textContent = new Date().toTimeString().split(" ")[0];
-    }
-    tickClock();
-    setInterval(tickClock, 1000);
-
-    // Matrix rain background
-    const canvas = document.getElementById("matrix-bg");
-    const ctx = canvas.getContext("2d");
-    const chars = "01GRANDLEAKAGE<>/{}[]#$*";
-    const fontSize = 14;
-    let columns = 0;
-    let drops = [];
-
-    function resizeMatrix() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      columns = Math.floor(canvas.width / fontSize);
-      drops = Array.from({ length: columns }, () => Math.random() * -50);
-    }
-
-    function drawMatrix() {
-      ctx.fillStyle = "rgba(5, 8, 6, 0.08)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#00ff66";
-      ctx.font = `${fontSize}px monospace`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    }
-
-    resizeMatrix();
-    window.addEventListener("resize", resizeMatrix);
-    setInterval(drawMatrix, 45);
-
-    // Initial render
-    updatePreview();
     renderRecords();
   </script>
 </body>
