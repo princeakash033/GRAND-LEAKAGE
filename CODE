@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRAND LEAKAGE // Dossier Terminal</title>
+  <style>
+    :root {
+      --bg: #050806;
+      --panel: #0a110d;
+      --panel-2: #0f1913;
+      --border: #173322;
+      --green: #00ff66;
+      --green-dim: #00b84a;
+      --green-muted: #5f8f70;
+      --amber: #ffb000;
+      --red: #ff3b5c;
+      --font-mono: "Courier New", Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--green);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Matrix rain canvas behind content */
+    #matrix-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.16;
+      pointer-events: none;
+    }
+
+    /* Subtle CRT scanline overlay */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 2px,
+        rgba(0, 255, 102, 0.03) 3px,
+        rgba(0, 0, 0, 0.25) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 18px 60px;
+    }
+
+    header {
+      border: 1px solid var(--border);
+      background: rgba(10, 17, 13, 0.9);
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.08);
+      margin-bottom: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-tag {
+      font-size: 0.75rem;
+      color: var(--amber);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      letter-spacing: 3px;
+      text-shadow: 0 0 12px rgba(0, 255, 102, 0.45);
+    }
+
+    .subtitle {
+      color: var(--green-muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .status-box {
+      text-align: right;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: var(--green-dim);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      margin-right: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .status-box {
+        text-align: left;
+      }
+    }
+
+    .panel {
+      background: rgba(10, 17, 13, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px;
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--green-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    textarea,
+    select {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--green);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 9px 11px;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .pic-preview-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .pic-preview {
+      width: 58px;
+      height: 58px;
+      border-radius: 4px;
+      border: 1px solid var(--green-dim);
+      object-fit: cover;
+      background: var(--panel-2);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      font-family: var(--font-mono);
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.18s ease;
+      border: 1px solid var(--green);
+      background: rgba(0, 255, 102, 0.12);
+      color: var(--green);
+    }
+
+    button:hover {
+      background: var(--green);
+      color: var(--bg);
+      box-shadow: 0 0 12px rgba(0, 255, 102, 0.45);
+    }
+
+    button.secondary {
+      border-color: var(--green-muted);
+      color: var(--green-muted);
+      background: transparent;
+    }
+
+    button.secondary:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0, 255, 102, 0.08);
+      box-shadow: none;
+    }
+
+    button.danger {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(255, 59, 92, 0.08);
+      padding: 6px 10px;
+      font-size: 0.72rem;
+    }
+
+    button.danger:hover {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255, 59, 92, 0.4);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .records-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.15s, border-color 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--green-dim);
+    }
+
+    .card-top {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 4px;
+      border: 1px solid var(--green-dim);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #060b08;
+    }
+
+    .record-id {
+      font-size: 0.75rem;
+      color: var(--amber);
+      letter-spacing: 1px;
+    }
+
+    .record-name {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: 3px;
+      border: 1px solid var(--green-dim);
+      color: var(--green-dim);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .record-notes {
+      font-size: 0.8rem;
+      color: var(--green-muted);
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-top: 1px dashed rgba(0, 255, 102, 0.18);
+      padding-top: 8px;
+    }
+
+    .card-footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      color: var(--green-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 16px;
+      color: var(--green-muted);
+      border: 1px dashed var(--border);
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix-bg"></canvas>
+
+  <div class="app">
+    <header>
+      <div>
+        <div class="brand-tag">// FICTIONAL ARCHIVE &amp; SANDBOX UI</div>
+        <h1>GRAND LEAKAGE</h1>
+        <p class="subtitle">Local dossier reader &amp; entry console — add fake identities, IDs &amp; pictures to inspect anytime.</p>
+      </div>
+      <div class="status-box">
+        <div><span class="dot"></span>SYSTEM ONLINE</div>
+        <div>RECORDS STORED: <strong id="record-count">0</strong></div>
+        <div id="clock">--:--:--</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Add Record Form -->
+      <section class="panel" aria-label="Add new dossier entry">
+        <div class="panel-title">
+          <span>[+] Inject Fake Person</span>
+          <span style="font-size:0.72rem; color:var(--amber);">LOCAL STORAGE</span>
+        </div>
+
+        <form id="dossier-form">
+          <div class="field">
+            <label for="person-id">Person ID</label>
+            <input type="text" id="person-id" placeholder="e.g. GL-0042" required />
+          </div>
+
+          <div class="field">
+            <label for="person-name">Full Name / Alias</label>
+            <input type="text" id="person-name" placeholder="e.g. Zero Cool / Alex Vance" required />
+          </div>
+
+          <div class="field">
+            <label for="person-tag">Category / Persona Type</label>
+            <select id="person-tag">
+              <option value="Fake Persona">Fake Persona</option>
+              <option value="Test Subject">Test Subject</option>
+              <option value="Alias / Handle">Alias / Handle</option>
+              <option value="NPC / Character">NPC / Character</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="pic-url">Picture URL (Optional)</label>
+            <input type="text" id="pic-url" placeholder="https://... or upload file below" />
+          </div>
+
+          <div class="field">
+            <label for="pic-file">Or Upload Picture File</label>
+            <input type="file" id="pic-file" accept="image/*" />
+            <div class="pic-preview-wrap">
+              <img id="pic-preview" class="pic-preview" alt="Preview" />
+              <span style="font-size:0.74rem; color:var(--green-muted);">Auto-generates a fallback avatar if left blank.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="person-notes">Dossier Notes / Bio</label>
+            <textarea id="person-notes" placeholder="Add fictional background notes, traits, or timestamps..."></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button type="submit">Save Entry</button>
+            <button type="button" class="secondary" id="clear-form">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Reader / Archive View -->
+      <section class="panel" aria-label="Stored dossiers">
+        <div class="panel-title">
+          <span>[=] Dossier Reader</span>
+          <button type="button" class="danger" id="wipe-all">Wipe All</button>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" id="search-input" class="search-input" placeholder="Search by ID, name, tag, or notes..." />
+          <button type="button" class="secondary" id="load-samples">Load Samples</button>
+        </div>
+
+        <div id="records-container" class="records-list"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "grand_leakage_dossiers_v1";
+
+    const form = document.getElementById("dossier-form");
+    const idInput = document.getElementById("person-id");
+    const nameInput = document.getElementById("person-name");
+    const tagInput = document.getElementById("person-tag");
+    const picUrlInput = document.getElementById("pic-url");
+    const picFileInput = document.getElementById("pic-file");
+    const picPreview = document.getElementById("pic-preview");
+    const notesInput = document.getElementById("person-notes");
+    const clearFormBtn = document.getElementById("clear-form");
+    const wipeAllBtn = document.getElementById("wipe-all");
+    const loadSamplesBtn = document.getElementById("load-samples");
+    const searchInput = document.getElementById("search-input");
+    const recordsContainer = document.getElementById("records-container");
+    const recordCountEl = document.getElementById("record-count");
+    const clockEl = document.getElementById("clock");
+
+    let uploadedImageData = "";
+
+    // Generate a clean SVG placeholder avatar if no photo is supplied
+    function makePlaceholderAvatar(label = "GL") {
+      const clean = (label || "GL").slice(0, 2).toUpperCase().replace(/[^A-Z0-9]/g, "X");
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+          <rect width="120" height="120" fill="#07120c"/>
+          <rect x="4" y="4" width="112" height="112" rx="6" fill="none" stroke="#00ff66" stroke-opacity="0.45" stroke-width="2"/>
+          <circle cx="60" cy="44" r="18" fill="none" stroke="#00ff66" stroke-width="2.5"/>
+          <path d="M26 96 C28 74, 92 74, 94 96" fill="none" stroke="#00ff66" stroke-width="2.5"/>
+          <text x="60" y="112" text-anchor="middle" fill="#ffb000" font-family="monospace" font-size="12">${clean}</text>
+        </svg>`;
+      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim());
+    }
+
+    function updatePreview() {
+      const url = picUrlInput.value.trim();
+      if (uploadedImageData) {
+        picPreview.src = uploadedImageData;
+      } else if (url) {
+        picPreview.src = url;
+      } else {
+        picPreview.src = makePlaceholderAvatar(nameInput.value || idInput.value || "GL");
+      }
+    }
+
+    picPreview.onerror = () => {
+      picPreview.src = makePlaceholderAvatar(nameInput.value || "ERR");
+    };
+
+    picFileInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) {
+        uploadedImageData = "";
+        updatePreview();
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedImageData = String(reader.result || "");
+        updatePreview();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    picUrlInput.addEventListener("input", () => {
+      if (picUrlInput.value.trim()) uploadedImageData = "";
+      updatePreview();
+    });
+
+    nameInput.addEventListener("input", updatePreview);
+    idInput.addEventListener("input", updatePreview);
+
+    function loadRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveRecords(records) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      renderRecords();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderRecords() {
+      const all = loadRecords();
+      recordCountEl.textContent = String(all.length);
+
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = q
+        ? all.filter((item) =>
+            [item.id, item.name, item.tag, item.notes].some((field) =>
+              String(field || "").toLowerCase().includes(q)
+            )
+          )
+        : all;
+
+      if (filtered.length === 0) {
+        recordsContainer.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            No matching dossiers found. Add a fake person on the left or click <strong>Load Samples</strong>.
+          </div>`;
+        return;
+      }
+
+      recordsContainer.innerHTML = filtered
+        .map((item) => {
+          const imgSrc = item.pic || makePlaceholderAvatar(item.name || item.id);
+          return `
+            <article class="card">
+              <div class="card-top">
+                <img class="avatar" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.name)}" onerror="this.src='${makePlaceholderAvatar("GL")}'" />
+                <div>
+                  <div class="record-id">ID: ${escapeHtml(item.id)}</div>
+                  <div class="record-name">${escapeHtml(item.name)}</div>
+                  <span class="badge">${escapeHtml(item.tag || "Fake Persona")}</span>
+                </div>
+              </div>
+              <div class="record-notes">${escapeHtml(item.notes || "No additional notes recorded.")}</div>
+              <div class="card-footer">
+                <span>${escapeHtml(item.createdAt || "")}</span>
+                <button type="button" class="danger" onclick="deleteRecord('${escapeHtml(item.uid)}')">Delete</button>
+              </div>
+            </article>`;
+        })
+        .join("");
+    }
+
+    window.deleteRecord = function (uid) {
+      const updated = loadRecords().filter((r) => r.uid !== uid);
+      saveRecords(updated);
+    };
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = idInput.value.trim();
+      const name = nameInput.value.trim();
+      if (!id || !name) return;
+
+      const pic = uploadedImageData || picUrlInput.value.trim() || makePlaceholderAvatar(name);
+      const newRecord = {
+        uid: "uid_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        id,
+        name,
+        tag: tagInput.value,
+        pic,
+        notes: notesInput.value.trim(),
+        createdAt: new Date().toLocaleString()
+      };
+
+      const current = loadRecords();
+      current.unshift(newRecord);
+      saveRecords(current);
+
+      form.reset();
+      uploadedImageData = "";
+      updatePreview();
+    });
+
+    clearFormBtn.addEventListener("click", () => {
+      form.reset();
+      uploadedImageData = "";
+      updatePreview();
+    });
+
+    wipeAllBtn.addEventListener("click", () => {
+      if (confirm("Delete all stored GRAND LEAKAGE entries from this browser?")) {
+        saveRecords([]);
+      }
+    });
+
+    loadSamplesBtn.addEventListener("click", () => {
+      const samples = [
+        {
+          uid: "sample_1",
+          id: "GL-101",
+          name: "Cipher Vance",
+          tag: "Fake Persona",
+          pic: makePlaceholderAvatar("CV"),
+          notes: "Fictional persona created for UI testing. Operates out of Sector 7G (imaginary).",
+          createdAt: "Sample Entry"
+        },
+        {
+          uid: "sample_2",
+          id: "GL-204",
+          name: "Nyx Sterling",
+          tag: "NPC / Character",
+          pic: makePlaceholderAvatar("NS"),
+          notes: "Placeholder character profile for testing search, image rendering, and persistence.",
+          createdAt: "Sample Entry"
+        }
+      ];
+      const existing = loadRecords();
+      const existingIds = new Set(existing.map((x) => x.uid));
+      const merged = [...samples.filter((s) => !existingIds.has(s.uid)), ...existing];
+      saveRecords(merged);
+    });
+
+    searchInput.addEventListener("input", renderRecords);
+
+    // Live terminal clock
+    function tickClock() {
+      clockEl.textContent = new Date().toTimeString().split(" ")[0];
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    // Matrix rain background
+    const canvas = document.getElementById("matrix-bg");
+    const ctx = canvas.getContext("2d");
+    const chars = "01GRANDLEAKAGE<>/{}[]#$*";
+    const fontSize = 14;
+    let columns = 0;
+    let drops = [];
+
+    function resizeMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.random() * -50);
+    }
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(5, 8, 6, 0.08)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ff66";
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    resizeMatrix();
+    window.addEventListener("resize", resizeMatrix);
+    setInterval(drawMatrix, 45);
+
+    // Initial render
+    updatePreview();
+    renderRecords();
+  </script>
+</body>
+</html>
