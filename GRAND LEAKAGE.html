@@ -3,669 +3,706 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GRAND LEAKAGE // Threat & Entity Archive</title>
+  <title>GRAND LEAKAGE // ARCHIVE DATABASE</title>
   <style>
     :root {
-      --bg-dark: #050807;
-      --bg-panel: rgba(10, 18, 14, 0.9);
-      --bg-input: #070d0a;
-      --neon: #00ff66;
-      --neon-dim: rgba(0, 255, 102, 0.22);
-      --neon-glow: 0 0 12px rgba(0, 255, 102, 0.35);
-      --danger: #ff3b5c;
-      --warn: #ffb020;
-      --info: #38bdf8;
-      --text: #d8ffe7;
-      --muted: #7aa38a;
-      --border: #173624;
+      --bg-dark: #050805;
+      --panel-bg: rgba(8, 16, 10, 0.9);
+      --border-glow: #00ff41;
+      --text-main: #00ff41;
+      --text-dim: #008f11;
+      --danger: #ff2a2a;
+      --warning: #ffae00;
+      --info: #00e5ff;
+      --other: #b388ff;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: 'Courier New', Courier, monospace;
     }
 
     body {
       background-color: var(--bg-dark);
-      color: var(--text);
-      font-family: "Courier New", Courier, monospace;
+      color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
     }
 
-    /* Hacking grid + scanline background */
-    body::before {
-      content: "";
+    /* Matrix Rain Canvas Background */
+    #matrix-canvas {
       position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(to right, rgba(0, 255, 102, 0.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 255, 102, 0.06) 1px, transparent 1px);
-      background-size: 32px 32px;
-      z-index: -2;
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.25;
     }
 
+    /* Scanline Overlay */
     body::after {
       content: "";
       position: fixed;
       inset: 0;
       background: repeating-linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0) 0px,
-        rgba(0, 0, 0, 0) 2px,
-        rgba(0, 255, 102, 0.03) 3px,
-        rgba(0, 0, 0, 0.25) 4px
+        0deg,
+        rgba(0, 0, 0, 0.18),
+        rgba(0, 0, 0, 0.18) 1px,
+        transparent 1px,
+        transparent 3px
       );
-      z-index: -1;
       pointer-events: none;
+      z-index: 999;
     }
 
     header {
-      border-bottom: 1px solid var(--border);
-      background: rgba(5, 10, 8, 0.92);
-      backdrop-filter: blur(6px);
-      padding: 1.25rem 1.5rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
+      border-bottom: 2px solid var(--border-glow);
+      background: rgba(0, 12, 2, 0.92);
+      padding: 1.2rem 1.5rem;
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 1rem;
+      box-shadow: 0 0 18px rgba(0, 255, 65, 0.3);
     }
 
     .brand h1 {
-      color: var(--neon);
-      font-size: clamp(1.4rem, 3vw, 2.1rem);
+      font-size: clamp(1.5rem, 4vw, 2.3rem);
       letter-spacing: 3px;
-      text-shadow: var(--neon-glow);
+      text-shadow: 0 0 10px var(--border-glow);
     }
 
     .brand p {
-      color: var(--muted);
-      font-size: 0.82rem;
-      margin-top: 0.25rem;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 4px;
     }
 
-    .status-bar {
+    .header-actions {
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.82rem;
-      color: var(--neon);
+      flex-wrap: wrap;
+      gap: 0.6rem;
     }
 
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--neon);
-      box-shadow: 0 0 8px var(--neon);
-      animation: pulse 1.6s infinite;
+    button {
+      background: #001a05;
+      color: var(--text-main);
+      border: 1px solid var(--border-glow);
+      padding: 0.55rem 0.9rem;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
+    button:hover {
+      background: var(--border-glow);
+      color: #000;
+      box-shadow: 0 0 12px var(--border-glow);
+    }
+
+    button.btn-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    button.btn-danger:hover {
+      background: var(--danger);
+      color: #000;
+      box-shadow: 0 0 12px var(--danger);
     }
 
     main {
-      max-width: 1200px;
-      margin: 1.75rem auto;
-      padding: 0 1.5rem 3rem;
+      max-width: 1280px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 3rem;
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 1.75rem;
-      align-items: start;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
     }
 
-    @media (max-width: 920px) {
+    @media (max-width: 900px) {
       main {
         grid-template-columns: 1fr;
       }
     }
 
     .panel {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-glow);
       padding: 1.25rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
     }
 
-    .panel-title {
-      color: var(--neon);
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+    .panel h2 {
+      font-size: 1.1rem;
+      border-bottom: 1px dashed var(--text-dim);
+      padding-bottom: 0.6rem;
       margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
+      letter-spacing: 1px;
     }
 
     .form-group {
-      margin-bottom: 0.95rem;
+      margin-bottom: 0.9rem;
     }
 
     label {
       display: block;
       font-size: 0.8rem;
-      color: var(--muted);
       margin-bottom: 0.35rem;
+      color: #7dff9b;
     }
 
-    input[type="text"],
-    select,
-    textarea {
+    input, select, textarea {
       width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: inherit;
+      background: #020a03;
+      border: 1px solid var(--text-dim);
+      color: var(--text-main);
+      padding: 0.6rem;
       font-size: 0.9rem;
-      padding: 0.6rem 0.7rem;
-      border-radius: 4px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    input[type="text"]:focus,
-    select:focus,
-    textarea:focus {
-      border-color: var(--neon);
-      box-shadow: 0 0 0 2px var(--neon-dim);
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--border-glow);
+      box-shadow: 0 0 8px rgba(0, 255, 65, 0.35);
     }
 
     textarea {
-      min-height: 75px;
       resize: vertical;
+      min-height: 85px;
     }
 
-    input[type="file"] {
-      width: 100%;
-      font-size: 0.78rem;
-      color: var(--muted);
+    #photo-preview {
+      margin-top: 0.5rem;
+      max-width: 100%;
+      max-height: 140px;
+      display: none;
+      border: 1px solid var(--border-glow);
+      object-fit: cover;
     }
 
-    .btn {
-      cursor: pointer;
-      font-family: inherit;
-      font-weight: bold;
-      letter-spacing: 1px;
-      border-radius: 4px;
-      padding: 0.65rem 1rem;
-      border: 1px solid var(--neon);
-      transition: all 0.2s;
-      font-size: 0.85rem;
-    }
-
-    .btn-primary {
-      width: 100%;
-      background: var(--neon-dim);
-      color: var(--neon);
-    }
-
-    .btn-primary:hover {
-      background: var(--neon);
-      color: #041008;
-      box-shadow: var(--neon-glow);
-    }
-
-    .btn-sm {
-      padding: 0.35rem 0.65rem;
-      font-size: 0.75rem;
-      background: transparent;
-      color: var(--text);
-      border-color: var(--border);
-    }
-
-    .btn-sm:hover {
-      border-color: var(--neon);
-      color: var(--neon);
-    }
-
-    .btn-danger {
-      border-color: rgba(255, 59, 92, 0.5);
-      color: var(--danger);
-    }
-
-    .btn-danger:hover {
-      background: var(--danger);
-      color: #fff;
-      border-color: var(--danger);
-    }
-
+    /* Controls Bar */
     .controls-bar {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr 180px;
       gap: 0.75rem;
-      margin-bottom: 1.25rem;
-      align-items: center;
-      justify-content: space-between;
+      margin-bottom: 1rem;
     }
 
-    .search-filter {
+    @media (max-width: 550px) {
+      .controls-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stats-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.6rem;
-      flex: 1;
+      gap: 1rem;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+      padding: 0.6rem;
+      background: rgba(0, 40, 10, 0.5);
+      border: 1px solid var(--text-dim);
     }
 
-    .search-filter input,
-    .search-filter select {
-      min-width: 170px;
-      flex: 1;
-    }
-
-    .backup-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
+    /* Records Grid */
     .records-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1rem;
     }
 
-    .card {
-      background: rgba(7, 13, 10, 0.92);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
+    .record-card {
+      background: #030b04;
+      border: 1px solid var(--text-dim);
+      padding: 1rem;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       transition: transform 0.2s, border-color 0.2s;
     }
 
-    .card:hover {
+    .record-card:hover {
+      border-color: var(--border-glow);
       transform: translateY(-2px);
-      border-color: var(--neon);
-    }
-
-    .card-photo {
-      width: 100%;
-      height: 170px;
-      object-fit: cover;
-      background: #030604;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .no-photo {
-      width: 100%;
-      height: 170px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #030604;
-      color: var(--muted);
-      font-size: 0.8rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .card-body {
-      padding: 0.9rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
+      box-shadow: 0 0 12px rgba(0, 255, 65, 0.25);
     }
 
     .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 0.7rem;
       gap: 0.5rem;
     }
 
     .record-id {
-      font-size: 0.75rem;
-      color: var(--muted);
+      font-size: 0.8rem;
+      color: #88ff9e;
+      font-weight: bold;
+      word-break: break-all;
     }
 
     .badge {
-      font-size: 0.7rem;
-      padding: 0.18rem 0.5rem;
-      border-radius: 3px;
-      text-transform: uppercase;
+      font-size: 0.72rem;
+      padding: 2px 7px;
       font-weight: bold;
-      border: 1px solid currentColor;
+      text-transform: uppercase;
+      border: 1px solid;
     }
 
-    .badge-fake { color: var(--warn); background: rgba(255, 176, 32, 0.12); }
-    .badge-scam { color: var(--danger); background: rgba(255, 59, 92, 0.12); }
-    .badge-crime { color: #ff6b8b; background: rgba(255, 107, 139, 0.15); }
-    .badge-other { color: var(--info); background: rgba(56, 189, 248, 0.12); }
+    .badge-Fake { color: var(--warning); border-color: var(--warning); }
+    .badge-Scams { color: #ff6d00; border-color: #ff6d00; }
+    .badge-Crime { color: var(--danger); border-color: var(--danger); }
+    .badge-Others { color: var(--other); border-color: var(--other); }
 
-    .card-name {
+    .record-photo {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      border: 1px solid var(--text-dim);
+      margin-bottom: 0.7rem;
+      background: #000;
+    }
+
+    .record-name {
       font-size: 1.05rem;
-      color: var(--neon);
-      word-break: break-word;
+      font-weight: bold;
+      margin-bottom: 0.4rem;
+      color: #fff;
     }
 
-    .card-notes {
-      font-size: 0.82rem;
-      color: var(--text);
-      opacity: 0.88;
+    .record-details {
+      font-size: 0.84rem;
+      color: #b4ffbe;
+      line-height: 1.4;
+      margin-bottom: 0.8rem;
+      word-break: break-word;
       white-space: pre-wrap;
-      word-break: break-word;
-      flex: 1;
     }
 
-    .card-footer {
-      margin-top: 0.5rem;
-      padding-top: 0.6rem;
-      border-top: 1px solid rgba(23, 54, 36, 0.7);
+    .record-meta {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      border-top: 1px dashed #0a3b12;
+      padding-top: 0.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .card-actions button {
+      padding: 0.3rem 0.55rem;
       font-size: 0.72rem;
-      color: var(--muted);
+    }
+
+    /* Modal for Full View */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background: #050e06;
+      border: 2px solid var(--border-glow);
+      max-width: 550px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+    }
+
+    .modal-box img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      border: 1px solid var(--border-glow);
+      margin: 0.8rem 0;
+      background: #000;
     }
 
     .empty-state {
       text-align: center;
-      padding: 2.5rem 1rem;
-      color: var(--muted);
-      border: 1px dashed var(--border);
-      border-radius: 6px;
+      padding: 3rem 1rem;
+      color: var(--text-dim);
+      border: 1px dashed var(--text-dim);
     }
   </style>
 </head>
 <body>
+
+  <canvas id="matrix-canvas"></canvas>
+
   <header>
-    <div class="header-inner">
-      <div class="brand">
-        <h1>GRAND LEAKAGE</h1>
-        <p>PERSISTENT ENTITY &amp; INCIDENT ARCHIVE // LOCAL STORAGE ENGINE</p>
-      </div>
-      <div class="status-bar">
-        <span class="dot"></span>
-        <span id="recordCount">0 RECORDS STORED</span>
-      </div>
+    <div class="brand">
+      <h1>&gt;_ GRAND LEAKAGE</h1>
+      <p>[ STATUS: ONLINE // PERSISTENT LOCAL NODE STORAGE ACTIVE ]</p>
+    </div>
+    <div class="header-actions">
+      <button onclick="exportBackup()">Export Backup (.JSON)</button>
+      <button onclick="document.getElementById('import-file').click()">Import Backup</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBackup(event)" />
     </div>
   </header>
 
   <main>
-    <!-- Add Entry Form -->
+    <!-- Left Panel: Add New Record -->
     <section class="panel">
-      <h2 class="panel-title">[+] Add Record</h2>
-      <form id="leakForm">
+      <h2>// INJECT NEW RECORD</h2>
+      <form id="leak-form">
         <div class="form-group">
-          <label for="entryId">ID *</label>
-          <input type="text" id="entryId" placeholder="e.g. GL-1042" required />
+          <label for="person-id">TARGET ID *</label>
+          <input type="text" id="person-id" placeholder="e.g., GL-2026-001" required />
         </div>
 
         <div class="form-group">
-          <label for="entryName">Name / Alias *</label>
-          <input type="text" id="entryName" placeholder="e.g. Target or Handle" required />
+          <label for="person-name">TARGET NAME / ALIAS *</label>
+          <input type="text" id="person-name" placeholder="Full Name or Handle" required />
         </div>
 
         <div class="form-group">
-          <label for="entryType">Person / Threat Type *</label>
-          <select id="entryType" required>
-            <option value="Fake">Fake</option>
-            <option value="Scam">Scam</option>
-            <option value="Crime">Crime</option>
-            <option value="Other">Other</option>
+          <label for="person-type">CLASSIFICATION TYPE *</label>
+          <select id="person-type" required>
+            <option value="Fake">FAKE</option>
+            <option value="Scams">SCAMS</option>
+            <option value="Crime">CRIME</option>
+            <option value="Others">OTHERS</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="entryPhotoFile">Upload Photo (Saved Permanently)</label>
-          <input type="file" id="entryPhotoFile" accept="image/*" />
+          <label for="person-photo">UPLOAD PHOTO (SAVED LOCALLY)</label>
+          <input type="file" id="person-photo" accept="image/*" />
+          <img id="photo-preview" alt="Preview" />
         </div>
 
         <div class="form-group">
-          <label for="entryPhotoUrl">Or Photo URL (Optional)</label>
-          <input type="text" id="entryPhotoUrl" placeholder="https://example.com/photo.jpg" />
+          <label for="person-details">LEAKED DETAILS / INTEL *</label>
+          <textarea id="person-details" placeholder="Enter phone numbers, addresses, IP logs, case notes, evidence..." required></textarea>
         </div>
 
-        <div class="form-group">
-          <label for="entryNotes">Additional Details / Notes</label>
-          <textarea id="entryNotes" placeholder="Enter evidence, links, or incident notes..."></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">COMMIT TO GRAND LEAKAGE</button>
+        <button type="submit" style="width: 100%;">[ STORE PERMANENTLY ]</button>
       </form>
     </section>
 
-    <!-- Stored Records Viewer -->
+    <!-- Right Panel: View Stored Database -->
     <section class="panel">
-      <h2 class="panel-title">[#] Stored Database</h2>
+      <h2>// STORED ARCHIVE RECORDS</h2>
 
       <div class="controls-bar">
-        <div class="search-filter">
-          <input type="text" id="searchInput" placeholder="Search by ID, name, or notes..." />
-          <select id="filterType">
-            <option value="ALL">All Types</option>
-            <option value="Fake">Fake</option>
-            <option value="Scam">Scam</option>
-            <option value="Crime">Crime</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div class="backup-actions">
-          <button type="button" class="btn btn-sm" id="exportBtn">Export JSON</button>
-          <button type="button" class="btn btn-sm" id="importTriggerBtn">Import JSON</button>
-          <input type="file" id="importFileInput" accept="application/json" style="display:none;" />
-        </div>
+        <input type="text" id="search-input" placeholder="Search by ID, Name, or Details..." oninput="renderRecords()" />
+        <select id="filter-type" onchange="renderRecords()">
+          <option value="ALL">ALL TYPES</option>
+          <option value="Fake">FAKE</option>
+          <option value="Scams">SCAMS</option>
+          <option value="Crime">CRIME</option>
+          <option value="Others">OTHERS</option>
+        </select>
       </div>
 
-      <div id="recordsContainer" class="records-grid"></div>
+      <div class="stats-bar" id="stats-bar">
+        <span>TOTAL RECORDS: 0</span>
+      </div>
+
+      <div id="records-container" class="records-grid"></div>
     </section>
   </main>
 
+  <!-- Full Details View Modal -->
+  <div class="modal-backdrop" id="view-modal" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 id="modal-id" style="border:none; margin:0;">ID</h2>
+        <button onclick="document.getElementById('view-modal').style.display='none'">X</button>
+      </div>
+      <div id="modal-badge-wrap" style="margin-top:0.5rem;"></div>
+      <img id="modal-img" alt="Target Photo" />
+      <h3 id="modal-name" style="color:#fff; margin-bottom:0.6rem;"></h3>
+      <p id="modal-details" style="white-space:pre-wrap; line-height:1.5; color:#b4ffbe; font-size:0.9rem;"></p>
+      <p id="modal-date" style="margin-top:1rem; font-size:0.75rem; color:var(--text-dim);"></p>
+    </div>
+  </div>
+
   <script>
-    const STORAGE_KEY = "GRAND_LEAKAGE_RECORDS_V1";
+    const STORAGE_KEY = 'grand_leakage_db_v1';
+    let currentPhotoBase64 = '';
 
-    const leakForm = document.getElementById("leakForm");
-    const entryIdInput = document.getElementById("entryId");
-    const entryNameInput = document.getElementById("entryName");
-    const entryTypeInput = document.getElementById("entryType");
-    const entryPhotoFileInput = document.getElementById("entryPhotoFile");
-    const entryPhotoUrlInput = document.getElementById("entryPhotoUrl");
-    const entryNotesInput = document.getElementById("entryNotes");
+    // 1. Matrix Hacker Rain Background
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
 
-    const searchInput = document.getElementById("searchInput");
-    const filterTypeSelect = document.getElementById("filterType");
-    const recordsContainer = document.getElementById("recordsContainer");
-    const recordCountEl = document.getElementById("recordCount");
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-    const exportBtn = document.getElementById("exportBtn");
-    const importTriggerBtn = document.getElementById("importTriggerBtn");
-    const importFileInput = document.getElementById("importFileInput");
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*アイウエオカキクケコサシスセソ';
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
 
-    function loadRecords() {
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(5, 8, 5, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff41';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 45);
+
+    // 2. Photo Compression & Base64 Encoding (keeps storage light & fast)
+    document.getElementById('person-photo').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) {
+        currentPhotoBase64 = '';
+        document.getElementById('photo-preview').style.display = 'none';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const img = new Image();
+        img.onload = function () {
+          const tempCanvas = document.createElement('canvas');
+          const maxDim = 500;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          tempCanvas.width = w;
+          tempCanvas.height = h;
+          tempCanvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          currentPhotoBase64 = tempCanvas.toDataURL('image/jpeg', 0.75);
+
+          const preview = document.getElementById('photo-preview');
+          preview.src = currentPhotoBase64;
+          preview.style.display = 'block';
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 3. Load & Save Functions (Permanent Browser Storage)
+    function getRecords() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (err) {
-        console.error("Failed to load records:", err);
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
         return [];
       }
     }
 
     function saveRecords(records) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    }
-
-    function escapeHtml(str) {
-      const div = document.createElement("div");
-      div.textContent = str ?? "";
-      return div.innerHTML;
-    }
-
-    function getBadgeClass(type) {
-      switch (type) {
-        case "Fake": return "badge-fake";
-        case "Scam": return "badge-scam";
-        case "Crime": return "badge-crime";
-        default: return "badge-other";
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      } catch (err) {
+        alert('Storage limit reached on this browser. Export a JSON backup and remove older photos.');
       }
     }
 
-    function readFileAsDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
+    // 4. Form Submission
+    document.getElementById('leak-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const records = getRecords();
 
+      const newRecord = {
+        uid: Date.now().toString(),
+        id: document.getElementById('person-id').value.trim(),
+        name: document.getElementById('person-name').value.trim(),
+        type: document.getElementById('person-type').value,
+        photo: currentPhotoBase64,
+        details: document.getElementById('person-details').value.trim(),
+        timestamp: new Date().toLocaleString()
+      };
+
+      records.unshift(newRecord);
+      saveRecords(records);
+
+      this.reset();
+      currentPhotoBase64 = '';
+      document.getElementById('photo-preview').style.display = 'none';
+      renderRecords();
+    });
+
+    // 5. Render Stored Records
     function renderRecords() {
-      const records = loadRecords();
-      const query = searchInput.value.trim().toLowerCase();
-      const selectedType = filterTypeSelect.value;
+      const records = getRecords();
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filter = document.getElementById('filter-type').value;
+      const container = document.getElementById('records-container');
 
-      recordCountEl.textContent = `${records.length} RECORD${records.length === 1 ? "" : "S"} STORED`;
+      // Update Stats
+      const counts = { Fake: 0, Scams: 0, Crime: 0, Others: 0 };
+      records.forEach(r => { if (counts[r.type] !== undefined) counts[r.type]++; });
+      document.getElementById('stats-bar').innerHTML = `
+        <span>TOTAL: <strong>${records.length}</strong></span>
+        <span>FAKE: <strong>${counts.Fake}</strong></span>
+        <span>SCAMS: <strong>${counts.Scams}</strong></span>
+        <span>CRIME: <strong>${counts.Crime}</strong></span>
+        <span>OTHERS: <strong>${counts.Others}</strong></span>
+      `;
 
-      const filtered = records.filter((item) => {
-        const matchesType = selectedType === "ALL" || item.type === selectedType;
-        const matchesQuery =
-          !query ||
-          item.id.toLowerCase().includes(query) ||
-          item.name.toLowerCase().includes(query) ||
-          (item.notes && item.notes.toLowerCase().includes(query));
-        return matchesType && matchesQuery;
+      const filtered = records.filter(r => {
+        const matchesType = filter === 'ALL' || r.type === filter;
+        const matchesText =
+          r.id.toLowerCase().includes(query) ||
+          r.name.toLowerCase().includes(query) ||
+          r.details.toLowerCase().includes(query);
+        return matchesType && matchesText;
       });
 
       if (filtered.length === 0) {
-        recordsContainer.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            No matching records found in GRAND LEAKAGE.
-          </div>
-        `;
+        container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">[ NO MATCHING RECORDS IN LOCAL ARCHIVE ]</div>`;
         return;
       }
 
-      recordsContainer.innerHTML = filtered
+      const defaultAvatar =
+        'data:image/svg+xml;utf8,' +
+        encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="180" viewBox="0 0 300 180">
+            <rect width="300" height="180" fill="#041207"/>
+            <text x="50%" y="50%" fill="#008f11" font-family="monospace" font-size="16" text-anchor="middle" dominant-baseline="middle">[ NO PHOTO DATA ]</text>
+          </svg>`
+        );
+
+      container.innerHTML = filtered
         .map(
-          (item) => `
-          <article class="card">
-            ${
-              item.photo
-                ? `<img class="card-photo" src="${escapeHtml(item.photo)}" alt="${escapeHtml(item.name)}" />`
-                : `<div class="no-photo">[ NO PHOTO ATTACHED ]</div>`
-            }
-            <div class="card-body">
+          r => `
+          <article class="record-card">
+            <div>
               <div class="card-top">
-                <span class="record-id">ID: ${escapeHtml(item.id)}</span>
-                <span class="badge ${getBadgeClass(item.type)}">${escapeHtml(item.type)}</span>
+                <span class="record-id">ID: ${escapeHtml(r.id)}</span>
+                <span class="badge badge-${escapeHtml(r.type)}">${escapeHtml(r.type)}</span>
               </div>
-              <h3 class="card-name">${escapeHtml(item.name)}</h3>
-              <p class="card-notes">${escapeHtml(item.notes || "No additional details recorded.")}</p>
-              <div class="card-footer">
-                <span>${escapeHtml(item.createdAt || "")}</span>
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('${escapeHtml(item.uid)}')">Delete</button>
+              <img class="record-photo" src="${r.photo || defaultAvatar}" alt="${escapeHtml(r.name)}" />
+              <div class="record-name">${escapeHtml(r.name)}</div>
+              <div class="record-details">${escapeHtml(r.details.length > 130 ? r.details.slice(0, 130) + '...' : r.details)}</div>
+            </div>
+            <div class="record-meta">
+              <span>${escapeHtml(r.timestamp)}</span>
+              <div class="card-actions">
+                <button onclick="viewRecord('${r.uid}')">View</button>
+                <button class="btn-danger" onclick="deleteRecord('${r.uid}')">Del</button>
               </div>
             </div>
           </article>
         `
         )
-        .join("");
+        .join('');
     }
 
-    window.deleteRecord = function (uid) {
-      const records = loadRecords().filter((r) => r.uid !== uid);
-      saveRecords(records);
-      renderRecords();
-    };
+    function viewRecord(uid) {
+      const record = getRecords().find(r => r.uid === uid);
+      if (!record) return;
 
-    leakForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const id = entryIdInput.value.trim();
-      const name = entryNameInput.value.trim();
-      const type = entryTypeInput.value;
-      const notes = entryNotesInput.value.trim();
-      const urlVal = entryPhotoUrlInput.value.trim();
-      const file = entryPhotoFileInput.files[0];
-
-      let photo = "";
-      if (file) {
-        try {
-          photo = await readFileAsDataUrl(file);
-        } catch {
-          alert("Could not read uploaded image file.");
-          return;
-        }
-      } else if (urlVal) {
-        photo = urlVal;
+      document.getElementById('modal-id').textContent = 'ID: ' + record.id;
+      document.getElementById('modal-badge-wrap').innerHTML = `<span class="badge badge-${escapeHtml(record.type)}">${escapeHtml(record.type)}</span>`;
+      const imgEl = document.getElementById('modal-img');
+      if (record.photo) {
+        imgEl.src = record.photo;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
       }
+      document.getElementById('modal-name').textContent = record.name;
+      document.getElementById('modal-details').textContent = record.details;
+      document.getElementById('modal-date').textContent = 'LOGGED ON: ' + record.timestamp;
+      document.getElementById('view-modal').style.display = 'flex';
+    }
 
-      const newRecord = {
-        uid: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
-        id,
-        name,
-        type,
-        photo,
-        notes,
-        createdAt: new Date().toLocaleString()
-      };
+    function closeModal(e) {
+      if (e.target.id === 'view-modal') {
+        document.getElementById('view-modal').style.display = 'none';
+      }
+    }
 
-      const records = loadRecords();
-      records.unshift(newRecord);
-      saveRecords(records);
+    function deleteRecord(uid) {
+      if (!confirm('Purge this record permanently from local storage?')) return;
+      const updated = getRecords().filter(r => r.uid !== uid);
+      saveRecords(updated);
       renderRecords();
-      leakForm.reset();
-    });
+    }
 
-    searchInput.addEventListener("input", renderRecords);
-    filterTypeSelect.addEventListener("change", renderRecords);
-
-    exportBtn.addEventListener("click", () => {
-      const data = localStorage.getItem(STORAGE_KEY) || "[]";
-      const blob = new Blob([data], { type: "application/json" });
+    // 6. Export / Import JSON so data can also move between PC, Laptop & Mobile
+    function exportBackup() {
+      const data = JSON.stringify(getRecords(), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = "grand-leakage-backup.json";
+      a.download = `GRAND_LEAKAGE_BACKUP_${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-    });
+    }
 
-    importTriggerBtn.addEventListener("click", () => importFileInput.click());
-
-    importFileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
+    function importBackup(event) {
+      const file = event.target.files[0];
       if (!file) return;
-      try {
-        const text = await file.text();
-        const imported = JSON.parse(text);
-        if (!Array.isArray(imported)) {
-          alert("Invalid backup JSON format.");
-          return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) throw new Error('Invalid format');
+          const existing = getRecords();
+          const merged = [...imported, ...existing];
+          saveRecords(merged);
+          renderRecords();
+          alert(`Imported ${imported.length} records successfully.`);
+        } catch {
+          alert('Invalid backup file.');
         }
-        const existing = loadRecords();
-        const existingUids = new Set(existing.map((r) => r.uid));
-        const merged = [
-          ...imported.filter((r) => r && r.id && r.name && !existingUids.has(r.uid)),
-          ...existing
-        ];
-        saveRecords(merged);
-        renderRecords();
-      } catch {
-        alert("Failed to import JSON file.");
-      } finally {
-        importFileInput.value = "";
-      }
-    });
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
 
-    // Initial render
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Initial render on page load
     renderRecords();
   </script>
 </body>
